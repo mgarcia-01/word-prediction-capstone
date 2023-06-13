@@ -25,4 +25,4 @@ And also provide a presentation
 
 -   Describe the app, and functions
 
-[@wordcloud; @stringi; @ggplot2; @tm; @RColorBrewer; @dplyr; @slam; @data.table; @Calin.Uioreanu:https://calin.shinyapps.io/predict_next_word]
+[@wordcloud; @stringi; @ggplot2; @tm; @RColorBrewer; @dplyr; @slam; @data.table; @Calin.Uioreanu:https://calin.shinyapps.io/predict_next_word; @NLP]

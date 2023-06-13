@@ -9,8 +9,8 @@ ui <- fluidPage(
   # App title ----
   titlePanel("N-Grams Data Science Capstone!"),
   textAreaInput("sentence", " Input the string to predict"),
-  numericInput("freq_dist", "Number of bins", 10),
-  numericInput("countend_words", "Enter number of end words", 5),
+  #numericInput("freq_dist", "Number of bins", 10),
+  #numericInput("countend_words", "Enter number of end words", 5),
   verbatimTextOutput("pred_results"),
   verbatimTextOutput("stats"),
   
@@ -46,7 +46,8 @@ server <- function(input, output) {
   })
 
   output$pred_results <- renderPrint({
-    pred_words(input$sentence, input$freq_dist, input$countend_words)
+    #pred_words(input$sentence, input$freq_dist, input$countend_words)
+    pred_words(input$sentence, 10, 5)
   })
   output$stats <- renderPrint({
     ngram_stats

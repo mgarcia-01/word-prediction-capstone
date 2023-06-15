@@ -250,9 +250,9 @@ pred_words <- function(sentence, n = 10, num_end_words = 5){
 
 run_tasks <- function() {
   if (!file.exists("corpus_data.Rdata")) {
-    filelist <<- c("en_US.blogs.txt", "en_US.twitter.txt", "en_US.news.txt")
+    #filelist <<- c("en_US.blogs.txt", "en_US.twitter.txt", "en_US.news.txt")
     ngram_max_limit = 6
-    #filelist <<- c("en_US.twitter.txt")
+    filelist <<- c("en_US.twitter.txt")
     zx <<- zipdownloader("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip","Coursera-SwiftKey.zip", list = T)
     if (length(filelist) > 1) {
       zip_test <<- ziphandler(zx)
@@ -260,7 +260,7 @@ run_tasks <- function() {
        zip_test <<- ziphandler(zx, filelist[1])
     }
     filedatareader(zip_test)
-    gen_stats(filelist, 0.05)
+    gen_stats(filelist, 0.20)
     corp <<- genCorpus(ds)
     ngramGenerator(corpus_object = corp, max_ngram = ngram_max_limit)
 

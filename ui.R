@@ -5,7 +5,9 @@ library(shiny)
 shinyUI(fluidPage(
   
   # App title ----
-  titlePanel("N-Grams Data Science Capstone!"),
+  titlePanel("N-Grams Data Science Capstone"),
+  h4('Takes a few seconds to fully load. It is loaded once you see the graphics '),
+  
   textAreaInput("sentence", " Input the string to predict"),
   #numericInput("freq_dist", "Number of bins", 10),
   #numericInput("countend_words", "Enter number of end words", 5),

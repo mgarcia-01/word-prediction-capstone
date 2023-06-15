@@ -1,6 +1,6 @@
 # init
-rm(list = ls())
-gc()
+#rm(list = ls())
+#gc()
 
 # libs
 if (!require("NLP"))   { install.packages("NLP") }
@@ -18,10 +18,11 @@ if (!require("data.table"))   { install.packages("data.table") }
 
 #TODO: Need to fix the temp file existence to work when it is not a tmp
 
-zipdownloader <- function(source_url,zip_file, list = NULL){
+zipdownloader <- function(source_url,zip_file, listopt = NULL){
     
     tempFile <- tempfile()
-
+    print("listopt is: ")
+    print(is.null(listopt))
     if (!file.exists(zip_file)) {
       print("The file doesnt exist...")
       download.file(source_url, tempFile)
@@ -29,18 +30,18 @@ zipdownloader <- function(source_url,zip_file, list = NULL){
       print("the file DOES exist...")
       tempFile <- zip_file
     }
-    if (is.null(list)==TRUE){
-      unzip(tempFile, list=T)
-      } else if (is.null(list)==FALSE) {
-          zx <- unzip(tempFile,list=T)
+    if (is.null(listopt)==T){
+      unzip(tempFile, list=FALSE)
+      } else if (is.null(list)==F) {
+          unzip(tempFile, list=FALSE)
+          zx <- unzip(tempFile,list=listopt)
           return(zx)
       }
     unlink(tempFile)
     }
 
 
-ziphandler <- function(x){
-  
+ziphandler <- function(x, singlefile = NULL) {
   zip_files <- x
   zip_files$Date <- NULL
   zip_files$Language <- substr(zip_files$Name, 7, 8)
@@ -52,9 +53,16 @@ ziphandler <- function(x){
     theme_light() + 
     xlab("") + ylab("File size in Mb")
   # only load US files
-  zip_files <- zip_files[ grep("en_US", zip_files$Name),  ]
+  
+  if (is.null(singlefile)) {
+    zip_files <- zip_files[grep("en_US", zip_files$Name),  ]
+  } else if (!is.null(singlefile)) {
+    zip_files <- zip_files[grep("en_US", zip_files$Name),  ]
+    zip_files <- zip_files[grep(singlefile, zip_files$Name), ]
+  }
   return(zip_files)
 }
+
 
 
 filedatareader <- function(file_df){
@@ -75,36 +83,35 @@ filedatareader <- function(file_df){
 cleanObjects <- function(objlist) {
   for (i in objlist) {
     objs <- ls(pos = ".GlobalEnv")
-    rm(list = objs[grep(i, objs)], pos = ".GlobalEnv")
+    if (i %in% objs) {
+      rm(list = objs[grep(i, objs)], pos = ".GlobalEnv")
+    }
   }
 }
 
 
 gen_stats <- function(txtlist, multiplier) {
-  
   ds <<- c()
   for (i in txtlist){
     var = eval(parse(text = i))
-    set.seed(1984); assign(paste0("ds.",i), sample(var,   0.2 * length(var)), envir = .GlobalEnv)
-    ds <<- c(ds,assign(paste0("ds.",i), sample(var,   0.2 * length(var)), envir = .GlobalEnv))
+    set.seed(1984); assign(paste0("ds.",i), sample(var,   multiplier * length(var)), envir = .GlobalEnv)
+    ds <<- c(ds,assign(paste0("ds.",i), sample(var,   multiplier * length(var)), envir = .GlobalEnv))
+    
   }
   
-  hist(stri_count_words(ds), breaks=30, col=rainbow(50), main = paste("Number of words distribution for", prettyNum(length(ds), scientific=FALSE, big.mark=","), "documents" ))
+  #TODO: Do not need histogram Remove
+  #hist(stri_count_words(ds), breaks=30, col=rainbow(50), main = paste("Number of words distribution for", prettyNum(length(ds), scientific=FALSE, big.mark=","), "documents" ))
   
   length(ds)
-  
   # word summaries
   summary(stri_count_words(ds))
-  
   # summary number of characters
   summary(sapply(ds, nchar) )
-  
   # calculate how much memory each object requires, and list the largest 10
   tail(sort(sapply(ls(), function(x) object.size(get(x)))), 10)
   print(paste0("list of obj",ls()))
   
   cleanObjects(txtlist)
-
 }
 
 #Volatile Corpus generator
@@ -135,10 +142,11 @@ genCorpus <- function(txtlist) {
   return(cp)
 }
 
-ngramGenerator <- function(corpus_object) {
+ngramGenerator <- function(corpus_object, max_ngram = 3) {
   ## Modified
   corp <- corpus_object
-  for(i in 1:6) {
+  #for(i in 1:6) {
+  for(i in 1:max_ngram) {
     print(paste0("Extracting", " ", i, "-grams from corpus"))
     tokens <- function(x) unlist(lapply(ngrams(words(x), i), paste, collapse = " "), use.names = FALSE)
     tdm <- TermDocumentMatrix(corp, control = list(tokenize = tokens))
@@ -158,6 +166,7 @@ ngramGenerator <- function(corpus_object) {
     # dynamically create variable names
     assign(paste0("ngram",i), tdmr.t, envir = .GlobalEnv)
   }
+  cleanObjects(c("tdmr", "tdm", "tdmr.t"))
 }
 
 
@@ -179,6 +188,7 @@ stat_generator <- function(startrange, endrange, stats_df){
                       mem = m)
     stats_df <- rbind(stats_df, xdf)
     }
+  #cleanObjects(c("s","w","most_frequent_ngram", "m"))
   return(stats_df)
 }
 
@@ -240,29 +250,38 @@ pred_words <- function(sentence, n = 10, num_end_words = 5){
 
 run_tasks <- function() {
   if (!file.exists("corpus_data.Rdata")) {
-    zx <<- zipdownloader("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip","Coursera-SwiftKey.zip", list = F)
-    zip_test <<- ziphandler(zx)
-    filedatareader(zip_test)
     filelist <<- c("en_US.blogs.txt", "en_US.twitter.txt", "en_US.news.txt")
-    gen_stats(filelist, 0.2)
+    ngram_max_limit = 6
+    #filelist <<- c("en_US.twitter.txt")
+    zx <<- zipdownloader("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip","Coursera-SwiftKey.zip", list = T)
+    if (length(filelist) > 1) {
+      zip_test <<- ziphandler(zx)
+    } else if (length(filelist) == 1) {
+       zip_test <<- ziphandler(zx, filelist[1])
+    }
+    filedatareader(zip_test)
+    gen_stats(filelist, 0.05)
     corp <<- genCorpus(ds)
-    ngramGenerator(corpus_object = corp)
-    # memory size of our initial corpus
+    ngramGenerator(corpus_object = corp, max_ngram = ngram_max_limit)
+
+    #memory size of our initial corpus
     #print(object.size(corp), units="Mb")
 
-    # environment size (all n-grams including corpus)
+    #environment size (all n-grams including corpus)
     #print(object.size(x=sapply(ls(), get)), units="Mb")
     
     ngram_stats <<- data.frame(ngram = '', length = 0, count_min = 0, count_median = 0, count_mean = 0, count_max = 0, most_frequent_ngram='', mem = '')
-    ngram_stats <<- stat_generator(1,6, ngram_stats)
+    ngram_stats <<- stat_generator(1,ngram_max_limit, ngram_stats)
     ngram_stats <<- ngram_stats[-1,]
+    
+    cleanObjects(c("corp", "en_US.blogs.txt", "en_US.twitter.txt", "en_US.news.txt", "zx", "ds", "zip_test"))
     # save data for the Shiny app
+
     save.image("corpus_data.Rdata")
-  } else if (file.exists("corpus_data.Rdata")) {
+    } else if (file.exists("corpus_data.Rdata")) {
      load("corpus_data.Rdata", envir = .GlobalEnv)
-  }
+     }
   print("Prediction Objects Loaded.")
 }
-
 
 run_tasks()

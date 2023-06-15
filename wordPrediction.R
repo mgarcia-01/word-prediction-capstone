@@ -260,7 +260,7 @@ run_tasks <- function() {
        zip_test <<- ziphandler(zx, filelist[1])
     }
     filedatareader(zip_test)
-    gen_stats(filelist, 0.20)
+    gen_stats(filelist, 0.10)
     corp <<- genCorpus(ds)
     ngramGenerator(corpus_object = corp, max_ngram = ngram_max_limit)
 

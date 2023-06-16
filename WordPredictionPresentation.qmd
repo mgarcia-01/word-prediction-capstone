@@ -1,0 +1,84 @@
+---
+title: "Word Prediction App"
+author: "Michael Garcia"
+format: 
+  revealjs:
+    theme: dark
+bibliography: references.bib
+link-citations: true
+editor: visual
+---
+
+## User Interface
+
+The word prediction app provides information about the entire set of text and provides top n-grams depending on the user input.
+
+![user interface](./assets/user_interface.jpg)
+
+# Application Features
+
+## Input and Prediction
+
+![prediction](./assets/string_input.png)
+
+A text field is available to predict the next n-gram of words. The output is dynamic and will provide the top predictions. The higher the value the most probable outcome.
+
+## Visualization and Stats
+
+The application initially displays the top ngrams by ngram size, a histogram, and a wordcloud for the entire data set.
+
+::: columns
+::: {.column width="33%"}
+![stats](./assets/full_data_stats.png)
+:::
+
+::: {.column width="33%"}
+![histogram](./assets/full_ngram_hist.png)
+:::
+
+::: {.column width="33%"}
+![wordcloud](./assets/full_wordcloud.png)
+:::
+:::
+
+## Word Prediction Application Workflow
+
+The application runs several methods to prepare the data or to load previously saved class objects
+
+![workflow](./assets/word_pred_process.jpg)
+
+## Word Prediction Algorithm
+
+::: {style="font-size: 0.5em"}
+-   The genCorpus method contains argument with lists the of the text files to use
+-   This uses the Text Mining (tm) VCorpus and tm_map methods to prep the corpus text
+-   The ngramGenerator accepts the corpus as an argument and creates matrix using the TermDocumentMatrix method
+    -   The matrix generated uses the corpus object, and recursivley creates nagrams along with the tokens
+    -   The ngrams are generated using the NLP library and ngrams method
+    -   ngrams function uses 2 arguments: uses the vector of words and the nth integer for length of computation.
+    -   Result is a list of the ngram values, which the TermMatrixDocument functon uses with the tokens and creates a table
+:::
+
+## Ngrams
+
+::: {style="font-size: 0.5em"}
+NGrams work by probably model:
+
+![eq](./assets/prob_estimation.png)
+
+Ngram refers to the combination of previous combination of N words that can aid in prediction of the N+1...N terms. The simplest form is probabilistic model or most likelihood estimation.
+
+![word_prob](./assets/word_prob_example.png)
+
+Depending on the extend of the Ngrams computed, tokens are created for various backward text to predict the word that would occur.
+
+So we are looking a the models probability outcome on frequency of the words with other words combined. And the tokens are the few N combination of words and the frequency of their occurance.
+
+It is important to note, that the algorithm is as good as the data that is used for training or estimations.
+:::
+
+## Citations and Reference
+
+::: {style="font-size: 0.75em"}
+[@wordcloud; @stringi; @ggplot2; @tm; @RColorBrewer; @dplyr; @slam; @data.table; Calin.Uioreanu:https://calin.shinyapps.io/predict_next_word; @NLP]
+:::

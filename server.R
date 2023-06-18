@@ -76,23 +76,46 @@ shinyServer(function(input, output) {
         ggtitle("Most frequent N-Grams")
   })
 
+  output$plot1 <- renderPlot({
+    validate(
+      need(input$sentence, "Waiting on Word Input")
+    )
+    prdf <- pred_words(input$sentence, 10, 5)
+    prdf$merged <- apply(prdf[2:(ncol(prdf) - 1)], 1, paste, collapse = " ")
+
+    ggplot(head(prdf,15), aes(reorder(merged,freq), freq)) +   
+        geom_bar(stat="identity") + coord_flip() + 
+        xlab("n-Grams") + ylab("Frequency") +
+        ggtitle("Most frequent N-Grams")
+        })
+
   output$pred_results <- renderPrint({
     #pred_words(input$sentence, input$freq_dist, input$countend_words)
     pred_words(input$sentence, 10, 5)
   })
-  output$stats <- renderPrint({
-    ngram_stats
-  })
+
+  ##TODO: Need to remove the stats
+  #output$stats <- renderPrint({
+  # ngram_stats
+  #})
+
   output$cloudImage <- renderImage({
-    outfile <- tempfile(fileext = '.png')
-    png(outfile, pointsize = 10, res = 200)
-    wordcloud(ngram_stats$most_frequent_ngram,ngram_stats$count_max,max.words=100,random.order = F,col=brewer.pal(8, "Dark2") , rot.per=0.3)
-    dev.off()
-    list(src = outfile,
-        contentType = 'image/png',
-        width = 700,
-        height = 700
+    validate(
+      need(input$sentence,"Waiting on Word Input")
     )
-  } #, deleteFile = TRUE
-  )
-})
+      outfile <- tempfile(fileext = '.png')
+      png(outfile, pointsize = 8, res = 100)
+      prdf <- pred_words(input$sentence, 10, 5)
+      prdf$merged <- apply(prdf[2:(ncol(prdf) - 1)], 1, paste, collapse = " ")
+      wordcloud(prdf$merged, prdf$freq,max.words=100,random.order = F,col=brewer.pal(8, "Dark2") , rot.per=0.3)
+      #wordcloud(ngram_stats$most_frequent_ngram,ngram_stats$count_max,max.words=100,random.order = F,col=brewer.pal(8, "Dark2") , rot.per=0.3)
+      dev.off()
+      list(src = outfile,
+          contentType = 'image/png',
+          width = 500,
+          height = 500)
+          }
+          , deleteFile = TRUE
+         )
+}
+)

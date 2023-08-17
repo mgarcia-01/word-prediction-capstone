@@ -8,6 +8,7 @@ library(tm)
 library(data.table)
 
 
+
 #if(!exists("foo", mode="function")) source("./wordPrediction.R")
 
 #source("./wordPrediction.R", local=TRUE)

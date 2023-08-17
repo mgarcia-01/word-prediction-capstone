@@ -2,8 +2,19 @@
 
 library(shiny)
 
+
 shinyUI(fluidPage(
-  
+    tags$head(tags$style(
+    HTML('
+         #sidebar {
+            background-color: #ffffff;
+            border-color: white;
+        }
+
+        body, label, input, button, select { 
+          font-family: "Arial";
+        }'))
+        ),
   # App title ----
   titlePanel("Word Prediction with N-Grams"),
   h4(" "),
@@ -21,11 +32,7 @@ shinyUI(fluidPage(
   sidebarLayout(position = "right",
     # Sidebar panel for inputs ----
     sidebarPanel(
-      h4("side panel"), width = 1
-      #plotOutput(outputId = "ngramPlot"),
-      #plotOutput(outputId = "plot1")
-       #imageOutput("cloudImage")
-      
+      id="sidebar"
     ),
     
     # Main panel for displaying outputs ----
